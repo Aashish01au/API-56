@@ -1,15 +1,15 @@
 const { deleteImage } = require("../../helpers/helpers")
-const categorySvc = require("./category.services")
+const productSvc = require("./product.services")
 
-class CategoryController{
-    async createCategory(req,res,next){
+class ProductController{
+    async createProduct(req,res,next){
         try {
            
-            let category = await  categorySvc.transformCategoryData(req)
-            let response = await categorySvc.storeCategory(category)
+            let product = await  productSvc.transformProductData(req)
+            let response = await productSvc.storeProduct(product)
             res.json({
                 result:response,
-                message:"Category Created Successfully",
+                message:"Product Created Successfully",
                 meta:null
             })
         } catch (exception) {
@@ -17,7 +17,7 @@ class CategoryController{
         }
     }
 
-    async getAllCategorys(req,res,next){
+    async getAllProducts(req,res,next){
         try {
             let search = req.query.search ?? null
             let limit = req.query.limit ?? 10
@@ -36,11 +36,11 @@ class CategoryController{
                 }
             }
 
-            let count = await categorySvc.totalcount(filter)
-            let categorys = await categorySvc.getAllCategoryDetails(filter,{skip:skip,limit:limit})
+            let count = await productSvc.totalcount(filter)
+            let products = await productSvc.getAllProductDetails(filter,{skip:skip,limit:limit})
 
             res.json({
-                result:categorys,
+                result:products,
                 message:"Bnaner data fetched",
                 meta:{
                     totalCount:count,
@@ -53,24 +53,24 @@ class CategoryController{
         }
     }
 
-    async updatedCategory(req,res,next){
+    async updatedProduct(req,res,next){
         try {
            
-            let categoryId = await categorySvc.getCategoryDetailsById(req.params.id)
-            if(!categoryId){
+            let productId = await productSvc.getProductDetailsById(req.params.id)
+            if(!productId){
                 next({code:403, message:"User Does not exist Any more"})
             }
-            let category = await  categorySvc.transformCategoryData(req,true)
-          if(!category.image){
-            category.image = categoryId.image
+            let product = await  productSvc.transformProductData(req,true)
+          if(!product.image){
+            product.image = productId.image
           }
-            let updated = await categorySvc.updateCategoryById(id,category)
-            if(updated.image !==category.image){
-                deleteImage("./public/uploader/"+category.image)
+            let updated = await productSvc.updateProductById(id,product)
+            if(updated.image !==product.image){
+                deleteImage("./public/uploader/"+product.image)
                }
             res.json({
                 result:updated,
-                message:"Category updated Successfully",
+                message:"Product updated Successfully",
                 meta:null
             })
         } catch (exception) {
@@ -81,10 +81,10 @@ class CategoryController{
     async getBanerById(req,res,next){
         try {
             let id = req.params.id
-            let categorydetails = await categorySvc.getCategoryDetailsById(id)
+            let productdetails = await productSvc.getProductDetailsById(id)
             res.json({
-                result:categorydetails,
-                message:"Category Details Fetched!!",
+                result:productdetails,
+                message:"Product Details Fetched!!",
                 meta :null
             })
         } catch (exception) {
@@ -92,13 +92,13 @@ class CategoryController{
         }
     } 
     
-    async getCategoryForHome(req,res,next){
+    async getProductForHome(req,res,next){
         try {
             let limit = req.query.limit ?? 10
-            let categoryDetails = await categorySvc.getCategoryForHomeDetails(limit)
+            let productDetails = await productSvc.getProductForHomeDetails(limit)
 
             res.json({
-                result : categoryDetails,
+                result : productDetails,
                 message:" Baner details Fecthed..",
                  meta : null
             })
@@ -107,17 +107,17 @@ class CategoryController{
         }
     }
 
-    async  deleteCategory(req,res,next){
+    async  deleteProduct(req,res,next){
         try {
-            let category = await categorySvc.deleteCategoryById(req.params.id)
+            let product = await productSvc.deleteProductById(req.params.id)
     
-            if(!category){
-                next({code:404, message:"Category Does not exist"})
+            if(!product){
+                next({code:404, message:"Product Does not exist"})
             }else{
-                deleteImage("./public/uploader/"+category.image)
+                deleteImage("./public/uploader/"+product.image)
                 res.json({
-                    result:category,
-                    message:"Category Deleted Successfully"
+                    result:product,
+                    message:"Product Deleted Successfully"
                 })
             }
         } catch (exception) {
@@ -125,13 +125,13 @@ class CategoryController{
         }
     }
 
-    async getCategoryBySlug(req,res,next){
+    async getProductBySlug(req,res,next){
         try {
             let slug = req.params.slug
-            let category = await categorySvc.getCategoryDetailsBySlug(slug)
+            let product = await productSvc.getProductDetailsBySlug(slug)
 
             res.json({
-                result:category,
+                result:product,
                 message:"Bradn Data fetched",
                 meta:null
             })
@@ -141,5 +141,5 @@ class CategoryController{
     }
 }
     
-const categoryCtrl = new CategoryController()
-module.exports = categoryCtrl
+const productCtrl = new ProductController()
+module.exports = productCtrl
