@@ -5,6 +5,7 @@ const validatedSchema = (schema)=>{
         schema.parse(data)
         next()
        } catch (exception) {
+        console.log(exception)
         next(exception)
        }
     }

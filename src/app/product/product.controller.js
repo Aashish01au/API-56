@@ -13,6 +13,7 @@ class ProductController{
                 meta:null
             })
         } catch (exception) {
+            console.log(exception)
             next(exception)
         }
     }
@@ -29,8 +30,9 @@ class ProductController{
                 filter= {
                     ...filter,
                     $or:[
-                        {title:new RegExp(search,"i")},
-                        {slug:new RegExp(search,"i")},
+                        {name:new RegExp(search,"i")},
+                        {description:new RegExp(search,"i")},
+                        {tags:new RegExp(search,"i")},
                         {status:new RegExp(search,"i")}
                     ]
                 }
@@ -55,25 +57,31 @@ class ProductController{
 
     async updatedProduct(req,res,next){
         try {
-           
             let productId = await productSvc.getProductDetailsById(req.params.id)
             if(!productId){
                 next({code:403, message:"User Does not exist Any more"})
             }
-            let product = await  productSvc.transformProductData(req,true)
-          if(!product.image){
-            product.image = productId.image
-          }
-            let updated = await productSvc.updateProductById(id,product)
-            if(updated.image !==product.image){
-                deleteImage("./public/uploader/"+product.image)
-               }
+            let product = await  productSvc.transformProductData(req,true)    
+            product.images = [...productId.images,...product.images]  
+            let delImage = req.body.delImage
+            let updatedImages = []
+            if(delImage){
+                delImage= delImage.split(",")
+                updatedImages = product.images.filter((image)=>!delImage.includes(image))
+                product.images = updatedImages
+                delImage.map((item)=>{
+                    deleteImage(("./public/uploader/"+item))
+                })
+            }
+                
+            let updated = await productSvc.updateProductById(productId,product)
             res.json({
                 result:updated,
                 message:"Product updated Successfully",
                 meta:null
             })
         } catch (exception) {
+            console.log(exception)
             next(exception)
         }
     }
@@ -114,7 +122,9 @@ class ProductController{
             if(!product){
                 next({code:404, message:"Product Does not exist"})
             }else{
-                deleteImage("./public/uploader/"+product.image)
+                product.images.map((item)=>{
+                    deleteImage(("./public/uploader/"+item))
+                })
                 res.json({
                     result:product,
                     message:"Product Deleted Successfully"

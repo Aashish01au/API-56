@@ -5,7 +5,13 @@ const ProductSchema = new mongoose.Schema({
         require:true,
         unique:true
     },
-    Seller:{
+    seller:{
+        type:mongoose.Types.ObjectId,
+        ref:"User",
+        require:true,
+        default:null
+    },
+    createdBy:{
         type:mongoose.Types.ObjectId,
         ref:"User",
         require:true,
@@ -23,13 +29,12 @@ const ProductSchema = new mongoose.Schema({
         require:true,
         default:null
     }],
-    image:{
+    images:[{
         type:String,
         require:true
-    },
+    }],
     isFeatured:{
         type:Boolean,
-        require:true,
         default:false
     },
     slug:{

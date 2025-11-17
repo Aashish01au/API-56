@@ -10,14 +10,14 @@ class ProductServices {
                 createdBy:req.authUser,
             }
 
-            if(!req.file && isEdit !==true){
-                throw {code:401, message:"Validation failure",result:{image:"Image is required!!!"}}
-            }else if(req.file){
-                product["image"] = req.file.filename
+            if(!req.files && isEdit !==true){
+                throw {code:401, message:"Validation failure",result:{images:"Image is required!!!"}}
+            }else if(req.files){
+                product["images"] = req.files.map((image)=>image.filename)
             }
 
             if(!isEdit){
-                product.slug = slugify(product.title,{
+                product.slug = slugify(product.name,{
                     replacement:"-",
                     trim:true,
                     lower:true
@@ -31,11 +31,17 @@ class ProductServices {
             if(!product.brand || product.brand === "null" ){
                 product.brand = null
             }
+            if(!product.seller || product.seller === "null" ){
+                product.seller = null
+            }
+            if(isEdit){
+                delete product.delImage
+            } 
+            product["afterDiscount"]= product.price-(product.price*product.discount/100)
             return product
 
 
         } catch (exception) {
-            console.log(exception)
             throw exception
         }
     }
@@ -60,8 +66,9 @@ class ProductServices {
     async getAllProductDetails(filter={},paging={skip:0,limit:0}){
         try {
             let products = await ProductModel.find(filter)
-                .populate("parent",["status","_id","title"])
-                .populate("brands",["status","_id","title"])
+                .populate("category",["status","_id","title"])
+                .populate("brand",["status","_id","title"])
+                .populate("seller",["status","_id","name"])
                 .populate("createdBy",["role","_id","name"])
                 .sort({_id:"desc"})
                 .skip(paging.skip)
@@ -88,11 +95,13 @@ class ProductServices {
     async getProductDetailsById(id){
         try {
             let product = await ProductModel.findById(id)
-            .populate("parent",["status","_id","title"])
-            .populate("brands",["status","_id","title"])
+            .populate("category",["status","_id","title"])
+            .populate("brand",["status","_id","title"])
+            .populate("seller",["status","_id","name"])
             .populate("createdBy",["role","_id","name"])
                 return product
         } catch (exception) {
+            console.log(exception)
             throw exception
         }
     }
@@ -100,8 +109,9 @@ class ProductServices {
     async deleteProductById(id){
         try {
             let product = await ProductModel.findByIdAndDelete(id)
-            .populate("parent",["status","_id","title"])
-            .populate("brands",["status","_id","title"])
+            .populate("category",["status","_id","title"])
+            .populate("brand",["status","_id","title"])
+            .populate("seller",["status","_id","name"])
             .populate("createdBy",["role","_id","name"])
             return product
         } catch (exception) {
@@ -114,8 +124,9 @@ class ProductServices {
             let product = await ProductModel.find({
                 status:"active"
             })
-            .populate("parent",["status","_id","title"])
-            .populate("brands",["status","_id","title"])
+            .populate("category",["status","_id","title"])
+            .populate("brand",["status","_id","title"])
+            .populate("seller",["status","_id","name"])
             .populate("createdBy",["role","_id","name"])
             .sort({_id:"desc"})
             .limit(limit)
@@ -130,8 +141,9 @@ class ProductServices {
             let product = await ProductModel.findOne({
                 slug:slug
             })
-            .populate("parent",["status","_id","title"])
-            .populate("brands",["status","_id","title"])
+            .populate("category",["status","_id","title"])
+            .populate("brand",["status","_id","title"])
+            .populate("seller",["status","_id","name"])
             .populate("createdBy",["role","_id","name"])
             return product
         } catch (exception) {
